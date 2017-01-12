@@ -118,6 +118,7 @@ end;
 
 procedure TVIDEWizard.Execute;
 begin
+  FViBindings.ConfigureCursor;
 end;
 
 function TVIDEWizard.GetIDString: string;

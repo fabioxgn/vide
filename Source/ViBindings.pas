@@ -42,11 +42,11 @@ type
     procedure UpdateCount(key: Char);
     function GetPositionForMove(key: Char; count: Integer): TOTAEditPos;
     function IsMovementKey(key: Char): Boolean;
-  protected
   public
     constructor Create;
     procedure EditKeyDown(Key, ScanCode: Word; Shift: TShiftState; Msg: TMsg; var Handled: Boolean);
     procedure EditChar(Key, ScanCode: Word; Shift: TShiftState; Msg: TMsg; var Handled: Boolean);
+    procedure ConfigureCursor;
     property Count: Integer read GetCount;
     // Are we in insert mode?
     property InsertMode: Boolean read FInsertMode write FInsertMode;
@@ -103,7 +103,14 @@ begin
   Result := nil;
 end;
 
-{ TiBindings }
+procedure TViBindings.ConfigureCursor;
+var
+  EditBuffer: IOTAEditBuffer;
+begin
+  EditBuffer := GetEditBuffer;
+  if EditBuffer <> nil then
+    EditBuffer.EditOptions.UseBriefCursorShapes := InsertMode;
+end;
 
 constructor TViBindings.Create;
 begin
@@ -164,6 +171,7 @@ var
     begin
       SavePreviousAction;
       InsertMode := True;
+      GetEditBuffer.EditOptions.UseBriefCursorShapes := False;
     end;
   end;
 begin
@@ -464,6 +472,7 @@ begin
       Handled := True;
       Self.FPreviousAction.FInsertText := FInsertText;
       FInsertText := '';
+      GetEditBuffer.EditOptions.UseBriefCursorShapes := True;
     end;
   end
   else
