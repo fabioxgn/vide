@@ -29,6 +29,7 @@ type
     function GetName: string;
     function GetState: TWizardState;
     procedure Execute;
+    procedure BeforeDestruction; override;
   end;
 
 var VideWiz: TVIDEWizard;
@@ -42,9 +43,14 @@ begin
   Result := (AControl <> nil) and AControl.ClassNameIs('TEditControl') and SameText(AControl.Name, 'Editor');
 end;
 
+procedure TVIDEWizard.BeforeDestruction;
+begin
+  inherited;
+  FEvents.Free;
+end;
+
 constructor TVIDEWizard.Create;
 begin
-  // XXX free Application Events.
   FEvents := TApplicationEvents.Create(nil);
   FEvents.OnMessage := DoApplicationMessage;
   FViBindings := TViBindings.Create;

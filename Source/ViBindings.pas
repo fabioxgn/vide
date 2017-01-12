@@ -27,6 +27,7 @@ type
     FParsingNumber: Boolean;
     FInDelete: Boolean;
     FInChange: Boolean;
+    FInGo: Boolean;
     FInMark: Boolean;
     FInGotoMark: Boolean;
     FInRepeatChange: Boolean;
@@ -194,8 +195,7 @@ begin
       EditPosition.Move(FMarkArray[Ord(c)].Line, FMarkArray[Ord(c)].Col);
       FInGotoMark := False;
     end
-    else
-    if IsMovementKey(c) then
+    else if IsMovementKey(c) then
     begin
       if FInDelete then
       begin
@@ -285,6 +285,23 @@ begin
           begin
             FInDelete := True;
             Self.EditChar(Word('$'), ScanCode, Shift, Msg, Handled);
+          end;
+        'g':
+          begin
+            if FInGo then
+            begin
+              EditPosition.Move(1, 1);
+              FInGo := False;
+            end
+            else
+            begin
+              FInGo := True;
+              FEditCount := count;
+           end
+          end;
+        'G':
+          begin
+            EditPosition.MoveEOF;
           end;
         'H':
           begin
