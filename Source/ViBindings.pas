@@ -133,6 +133,7 @@ var
   c: Char;
   EditPosition: IOTAEditPosition;
   EditBlock: IOTAEditBlock;
+  View: IOTAEditView;
   Pos: TOTAEditPos;
   count: Integer;
   i: Integer;
@@ -285,6 +286,11 @@ begin
             FInDelete := True;
             Self.EditChar(Word('$'), ScanCode, Shift, Msg, Handled);
           end;
+        'H':
+          begin
+            EditPosition.Move(GetTopMostEditView.TopRow, 0);
+            EditPosition.MoveBOL;
+          end;
         'i':
           begin
             SwitchToInsertModeOrDoPreviousAction;
@@ -299,9 +305,20 @@ begin
             EditPosition.MoveEOL;
             EditPosition.Delete(1);
           end;
+        'L':
+          begin
+            EditPosition.Move(GetTopMostEditView.BottomRow -1, 0);
+            EditPosition.MoveBOL;
+          end;
         'm':
           begin
             FInMark := true;
+          end;
+        'M':
+          begin
+            View := GetTopMostEditView;
+            EditPosition.Move(View.TopRow + Trunc(((View.BottomRow -1) - View.TopRow)/2), 0);
+            EditPosition.MoveBOL;
           end;
         'n':
           begin
