@@ -272,6 +272,11 @@ begin
             FInDelete := True;
             FEditCount := count;
           end;
+        'D':
+          begin
+            FInDelete := True;
+            Self.EditChar(Word('$'), ScanCode, Shift, Msg, Handled);
+          end;
         'i':
           begin
             SwitchToInsertModeOrDoPreviousAction;
