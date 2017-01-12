@@ -301,7 +301,10 @@ begin
           end;
         'G':
           begin
-            EditPosition.MoveEOF;
+            if FParsingNumber then
+              EditPosition.GotoLine(FCount)
+            else
+              EditPosition.MoveEOF;
           end;
         'H':
           begin
@@ -484,6 +487,11 @@ begin
         '''':
           begin
             FInGotoMark := True;
+          end;
+        '^':
+          begin
+            EditPosition.MoveBOL;
+            EditPosition.MoveCursor(mmSkipWhite);
           end;
       end;
       ResetCount;
