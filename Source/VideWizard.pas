@@ -20,15 +20,14 @@ type
     procedure DoApplicationMessage(var Msg: TMsg; var Handled: Boolean);
   protected
     procedure EditKeyDown(Key, ScanCode: Word; Shift: TShiftState; Msg: TMsg; var Handled: Boolean);
-    procedure EditKeyUp(Key, ScanCode: Word; Shift: TShiftState; Msg: TMsg; var Handled: Boolean);
     procedure EditChar(Key, ScanCode: Word; Shift: TShiftState; Msg: TMsg; var Handled: Boolean);
   public
     constructor Create;
-    // IOTAWizard interafce methods(required for all wizards/experts)
     function GetIDString: string;
     function GetName: string;
     function GetState: TWizardState;
     procedure Execute;
+    procedure BeforeDestruction; override;
   end;
 
 var VideWiz: TVIDEWizard;
@@ -42,9 +41,15 @@ begin
   Result := (AControl <> nil) and AControl.ClassNameIs('TEditControl') and SameText(AControl.Name, 'Editor');
 end;
 
+procedure TVIDEWizard.BeforeDestruction;
+begin
+  inherited;
+  FEvents.Free;
+  FViBindings.Free;
+end;
+
 constructor TVIDEWizard.Create;
 begin
-  // XXX free Application Events.
   FEvents := TApplicationEvents.Create(nil);
   FEvents.OnMessage := DoApplicationMessage;
   FViBindings := TViBindings.Create;
@@ -64,40 +69,15 @@ begin
     Shift := KeyDataToShiftState(Msg.lParam);
 
     if Msg.message = WM_CHAR then
-    begin
-      EditChar(Key, ScanCode, Shift, Msg, Handled);
-    end
+      EditChar(Key, ScanCode, Shift, Msg, Handled)
     else
     begin
       if key = VK_PROCESSKEY then
-      begin
         Key := MapVirtualKey(ScanCode, 1);
-      end;
 
       if Msg.message = WM_KEYDOWN then
-      begin
         EditKeyDown(Key, ScanCode, Shift, Msg, Handled);
-      end
-      else
-      begin
-        EditKeyUp(Key, ScanCode, Shift, Msg, Handled);
-      end;
     end;
-
-    {
-    // If we've pressed ctrl or alt then we don't want to translate
-    // the keyboard state into a character.
-    if not ((ssCtrl in Shift) or (ssAlt in Shift)) then
-    begin
-      GetKeyboardState(keyState);
-      NumChars := ToUnicode(Key, ScanCode, KeyState, @Chars, 2, 0);
-
-      for i := 1 to NumChars do
-      begin
-        // ShowMessage(Chars[i]);
-      end;
-    end;
-    }
   end;
 end;
 
@@ -111,13 +91,9 @@ begin
   FViBindings.EditKeyDown(Key, ScanCode, Shift, Msg, Handled);
 end;
 
-procedure TVIDEWizard.EditKeyUp(Key, ScanCode: Word; Shift: TShiftState; Msg: TMsg; var Handled: Boolean);
-begin
-
-end;
-
 procedure TVIDEWizard.Execute;
 begin
+  FViBindings.ConfigureCursor;
 end;
 
 function TVIDEWizard.GetIDString: string;
