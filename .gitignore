@@ -11,3 +11,4 @@ __recovery
 *.dsk
 *.res
 bin/*
+*.stat
