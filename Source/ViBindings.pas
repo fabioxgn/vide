@@ -43,6 +43,7 @@ type
     procedure UpdateCount(key: Char);
     function GetPositionForMove(key: Char; count: Integer): TOTAEditPos;
     function IsMovementKey(key: Char): Boolean;
+    procedure Paste(const EditPosition: IOTAEditPosition; const Buffer: IOTAEditBuffer);
     procedure SetInsertMode(const Value: Boolean);
   public
     constructor Create;
@@ -92,17 +93,11 @@ begin
   Result := nil;
 end;
 
-function GetEditPosition: IOTAEditPosition;
-var
-  iEditBuffer: IOTAEditBuffer;
+function GetEditPosition(Buffer: IOTAEditBuffer): IOTAEditPosition;
 begin
-  iEditBuffer := GetEditBuffer;
-  if iEditBuffer <> nil then
-  begin
-    Result := iEditBuffer.GetEditPosition;
-    Exit;
-  end;
   Result := nil;
+  if Buffer <> nil then
+    Result := Buffer.GetEditPosition;
 end;
 
 procedure TViBindings.ConfigureCursor;
@@ -133,6 +128,7 @@ procedure TViBindings.EditChar(Key, ScanCode: Word; Shift: TShiftState; Msg: TMs
 var
   c: Char;
   EditPosition: IOTAEditPosition;
+  Buffer: IOTAEditBuffer;
   EditBlock: IOTAEditBlock;
   View: IOTAEditView;
   Pos: TOTAEditPos;
@@ -152,6 +148,7 @@ var
     EditBlock.Extend(Pos.Line, Pos.Col);
     FRegisterArray[FSelectedRegister].IsLine := IsLine;
     FRegisterArray[FSelectedRegister].Text := EditBlock.Text;
+
     EditBlock.Delete;
     EditBlock.EndBlock;
   end;
@@ -183,7 +180,8 @@ begin
   if not InsertMode then
   begin
     c := Chr(Key);
-    EditPosition := GetEditPosition;
+    Buffer := GetEditBuffer;
+    EditPosition := GetEditPosition(Buffer);
     if FInMark then
     begin
       FMarkArray[Ord(c)].Col := EditPosition.Column;
@@ -382,20 +380,7 @@ begin
           end;
         'p':
           begin
-            if (FRegisterArray[FSelectedRegister].IsLine) then
-            begin
-              EditPosition.MoveBOL;
-              EditPosition.MoveRelative(1, 0);
-              EditPosition.Save;
-            end
-            else
-            begin
-              EditPosition.MoveRelative(0, 1);
-            end;
-
-            EditPosition.InsertText(FRegisterArray[FSelectedRegister].Text);
-            if (FRegisterArray[FSelectedRegister].IsLine) then
-              EditPosition.Restore;
+            Paste(EditPosition, Buffer);
           end;
         'P':
           begin
@@ -594,7 +579,7 @@ var
     EditPosition.Restore;
   end;
 begin
-  EditPosition := GetEditPosition;
+  EditPosition := GetEditPosition(GetEditBuffer);
   EditPosition.Save;
 
   case Key of
@@ -735,6 +720,28 @@ begin
   EditPosition.Restore;
 
   Result := Pos;
+end;
+
+procedure TViBindings.Paste(const EditPosition: IOTAEditPosition; const Buffer: IOTAEditBuffer);
+var
+  AutoIdent: Boolean;
+begin
+  AutoIdent := Buffer.EditOptions.BufferOptions.AutoIndent;
+  if (FRegisterArray[FSelectedRegister].IsLine) then
+  begin
+    Buffer.EditOptions.BufferOptions.AutoIndent := False;
+    EditPosition.MoveBOL;
+    EditPosition.MoveRelative(1, 0);
+    EditPosition.Save;
+    EditPosition.InsertText(FRegisterArray[FSelectedRegister].Text);
+    EditPosition.Restore;
+    Buffer.EditOptions.BufferOptions.AutoIndent := AutoIdent;
+  end
+  else
+  begin
+    EditPosition.MoveRelative(0, 1);
+    EditPosition.InsertText(FRegisterArray[FSelectedRegister].Text);
+  end;
 end;
 
 procedure TViBindings.SetInsertMode(const Value: Boolean);
