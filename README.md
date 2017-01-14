@@ -36,10 +36,19 @@ This package provides a very minimal set of key bindings to allow one to do some
 | tx | jump to before next occurrence of character x | planned |
 | } | jump to next paragraph (or function/block, when editing code) | planned | 
 | { | jump to previous paragraph (or function/block, when editing code) | planned | 
+| % | find closing block | planned (maybe for begin/end too) |
 | Ctrl + b | move back one full screen | conflicting | 
 | Ctrl + f | move forward one full screen | conflicting | 
 | Ctrl + d | move forward 1/2 a screen | conflicting | 
 | Ctrl + u | move back 1/2 a screen | conflicting |
+
+### Searching
+
+| Command | Description | Status |
+|----|----|----|
+| * | search forward word at cursor | implemented |
+| n | move cursor forward after search | implemented |
+| N | move cursor backwards after search | implemented |
 
 ### Insert mode - inserting/appending text
 
@@ -67,7 +76,49 @@ S | delete line and substitute text (same as cc) | implemented |
 xp | transpose two letters (delete and paste) | planned |  
 u | undo| implemented |
 Ctrl + r | redo | conflicting |
+> | Indent | planned |
+< | Unindent | planned |
+~ | Switch case | planned |
+gu | Changed case to lowercase | planned |
+gU | Change case to uppercase | planned |
 . | repeat last command | needs testing |
+
+### Copy, Cut and paste
+
+| Command | Description | Status |
+|----|----|----|
+
+| Yy | yank (copy) a line| planned | 
+| 2yy | yank (copy) 2 lines| planned |
+| Yw | yank (copy) the characters of the word from the cursor position to the start of the next word| planned | 
+| Y$ | yank (copy) to end of line| planned | 
+| P | put (paste) the clipboard after cursor| implemented |
+| P | put (paste) before cursor| buggy (identation) |
+| Dd | delete (cut) a line| implemented |
+| 2dd | delete (cut) 2 lines| implemented | 
+| Dw | delete (cut) the characters of the word from the cursor position to the start of the next word| implemented |
+| D | delete (cut) to the end of the line| implemented |
+| D$ | delete (cut) to the end of the line| implemented |
+| x | delete (cut) character left of the cursor| buggy (doesn't copy) |
+| X | delete (cut) character left of the cursor| buggy (doesn't copy) |
+
+### Marking text (visual mode)
+
+| Command | Description | Status |
+|----|----|----|
+
+| v - start visual mode, mark lines, then do a command (like y-yank)
+| V - start linewise visual mode
+| o - move to other end of marked area
+| Ctrl + v - start visual block mode
+| O - move to other corner of block
+| aw - mark a word
+| ab - a block with ()
+| aB - a block with {}
+| ib - inner block with ()
+| iB - inner block with {}
+
+
 
 **conflicting** means that the shortcut conflicts with some Delphi builtin command, still didn't think of a solution, maybe override when on normal mode.
 
