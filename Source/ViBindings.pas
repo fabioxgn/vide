@@ -556,16 +556,26 @@ procedure TViBindings.ChangeIndentation(const EditPosition: IOTAEditPosition; co
     TDirection);
 var
   EditBlock: IOTAEditBlock;
+  StartedBlock: Boolean;
 begin
+  StartedBlock := False;
   EditBlock := GetTopMostEditView.Block;
   EditBlock.Save;
   EditPosition.Save;
 
   if EditBlock.Size = 0 then
   begin
+    StartedBlock := True;
     EditPosition.MoveBOL;
     EditBlock.BeginBlock;
     EditBlock.Extend(EditPosition.Row, EditPosition.Column + 1);
+  end
+  else
+  begin
+    // When selecting multiple lines, if the cursor is in the first column the last line doesn't get into the block
+    // and the indent seems buggy, as the cursor is on the last line but it isn't indented, so we force
+    // the selection of at least one char to correct this behavior
+    EditBlock.ExtendRelative(0, 1);
   end;
 
   case Direction of
@@ -576,6 +586,10 @@ begin
   end;
 
   EditPosition.Restore;
+
+  // If we don't call EndBlock, the selection gets buggy.
+  if StartedBlock then
+    EditBlock.EndBlock;
   EditBlock.Restore;
 end;
 
