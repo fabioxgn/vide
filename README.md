@@ -87,7 +87,6 @@ gU | Change case to uppercase | planned |
 
 | Command | Description | Status |
 |----|----|----|
-
 | Yy | yank (copy) a line| planned | 
 | 2yy | yank (copy) 2 lines| planned |
 | Yw | yank (copy) the characters of the word from the cursor position to the start of the next word| planned | 
@@ -106,19 +105,9 @@ gU | Change case to uppercase | planned |
 
 | Command | Description | Status |
 |----|----|----|
-
-| v - start visual mode, mark lines, then do a command (like y-yank)
-| V - start linewise visual mode
-| o - move to other end of marked area
-| Ctrl + v - start visual block mode
-| O - move to other corner of block
-| aw - mark a word
-| ab - a block with ()
-| aB - a block with {}
-| ib - inner block with ()
-| iB - inner block with {}
-
-
+| v | start visual mode, mark lines, then do a command (like y-yank) | maybe |
+| V | start linewise visual mode | maybe |
+| Ctrl + v | start visual block mode | maybe |
 
 **conflicting** means that the shortcut conflicts with some Delphi builtin command, still didn't think of a solution, maybe override when on normal mode.
 
