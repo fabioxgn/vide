@@ -28,18 +28,18 @@ This package provides a very minimal set of key bindings to allow one to do some
 | 0 | jump to the start of the line| implemented |
 | ^ | jump to the first non-blank character of the line | planned |
 | $ | jump to the end of the line| implemented |
-| g_ | jump to the last non-blank character of the line | planned | 
+| g_ | jump to the last non-blank character of the line | planned |
 | gg | go to the first line of the document| implemented |
 | G | go to the last line of the document| implemented |
 | 5G | go to line 5| implemented |
-| fx | jump to next occurrence of character x | planned | 
+| fx | jump to next occurrence of character x | planned |
 | tx | jump to before next occurrence of character x | planned |
-| } | jump to next paragraph (or function/block, when editing code) | planned | 
-| { | jump to previous paragraph (or function/block, when editing code) | planned | 
+| } | jump to next paragraph (or function/block, when editing code) | planned |
+| { | jump to previous paragraph (or function/block, when editing code) | planned |
 | % | find closing block | planned (maybe for begin/end too) |
-| Ctrl + b | move back one full screen | conflicting | 
-| Ctrl + f | move forward one full screen | conflicting | 
-| Ctrl + d | move forward 1/2 a screen | conflicting | 
+| Ctrl + b | move back one full screen | conflicting |
+| Ctrl + f | move forward one full screen | conflicting |
+| Ctrl + d | move forward 1/2 a screen | conflicting |
 | Ctrl + u | move back 1/2 a screen | conflicting |
 
 ### Searching
@@ -66,14 +66,14 @@ Esc | exit insert mode| implemented |
 
 | Command | Description | Status |
 |----|----|----|
-r | replace a single character | planned | 
+r | replace a single character | planned |
 J | join line below to the current one | implemented |
 cc | change (replace) entire line | implemented |
 cw | change (replace) to the end of the word | implemented |
 c$ | change (replace) to the end of the lin e| implemented |
 s | delete character and substitute text | implemented |
 S | delete line and substitute text (same as cc) | implemented |
-xp | transpose two letters (delete and paste) | planned |  
+xp | transpose two letters (delete and paste) | planned |
 u | undo| implemented |
 Ctrl + r | redo | conflicting |
 > | Indent | planned |
@@ -87,14 +87,14 @@ gU | Change case to uppercase | planned |
 
 | Command | Description | Status |
 |----|----|----|
-| Yy | yank (copy) a line| planned | 
+| Yy | yank (copy) a line| planned |
 | 2yy | yank (copy) 2 lines| planned |
-| Yw | yank (copy) the characters of the word from the cursor position to the start of the next word| planned | 
-| Y$ | yank (copy) to end of line| planned | 
+| Yw | yank (copy) the characters of the word from the cursor position to the start of the next word| planned |
+| Y$ | yank (copy) to end of line| planned |
 | P | put (paste) the clipboard after cursor| implemented |
-| P | put (paste) before cursor| buggy (identation) |
+| P | put (paste) before cursor| implemented |
 | Dd | delete (cut) a line| implemented |
-| 2dd | delete (cut) 2 lines| implemented | 
+| 2dd | delete (cut) 2 lines| implemented |
 | Dw | delete (cut) the characters of the word from the cursor position to the start of the next word| implemented |
 | D | delete (cut) to the end of the line| implemented |
 | D$ | delete (cut) to the end of the line| implemented |
@@ -136,5 +136,5 @@ Updating to a new version of Delphi
 ===================================
 
 - Create a DLL project and name it VIDE_DELPHIVER.dll
-- Edit runtime packages and add designide 
+- Edit runtime packages and add designide
 - Check Link runtime packages

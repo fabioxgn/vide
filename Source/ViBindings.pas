@@ -8,6 +8,7 @@ uses
   Winapi.Windows;
 
 type
+  TPasteDirection = (pdForward, pdBack);
   TViRegister = record
     IsLine: Boolean;
     Text: String;
@@ -43,7 +44,7 @@ type
     procedure UpdateCount(key: Char);
     function GetPositionForMove(key: Char; count: Integer): TOTAEditPos;
     function IsMovementKey(key: Char): Boolean;
-    procedure Paste(const EditPosition: IOTAEditPosition; const Buffer: IOTAEditBuffer);
+    procedure Paste(const EditPosition: IOTAEditPosition; const Buffer: IOTAEditBuffer; Direction: TPasteDirection);
     procedure SetInsertMode(const Value: Boolean);
   public
     constructor Create;
@@ -379,20 +380,9 @@ begin
             (BorlandIDEServices As IOTAEditorServices).TopView.MoveViewToCursor;
           end;
         'p':
-          begin
-            Paste(EditPosition, Buffer);
-          end;
+            Paste(EditPosition, Buffer, pdForward);
         'P':
-          begin
-            if (FRegisterArray[FSelectedRegister].IsLine) then
-            begin
-              EditPosition.MoveBOL;
-              EditPosition.Save;
-            end;
-            EditPosition.InsertText(FRegisterArray[FSelectedRegister].Text);
-            if (FRegisterArray[FSelectedRegister].IsLine) then
-              EditPosition.Restore;
-          end;
+            Paste(EditPosition, Buffer, pdBack);
         'R':
           begin
             // XXX Fix me for '.' command
@@ -722,7 +712,8 @@ begin
   Result := Pos;
 end;
 
-procedure TViBindings.Paste(const EditPosition: IOTAEditPosition; const Buffer: IOTAEditBuffer);
+procedure TViBindings.Paste(const EditPosition: IOTAEditPosition; const Buffer: IOTAEditBuffer; Direction:
+    TPasteDirection);
 var
   AutoIdent: Boolean;
 begin
@@ -731,7 +722,8 @@ begin
   begin
     Buffer.EditOptions.BufferOptions.AutoIndent := False;
     EditPosition.MoveBOL;
-    EditPosition.MoveRelative(1, 0);
+    if Direction = pdForward then
+      EditPosition.MoveRelative(1, 0);
     EditPosition.Save;
     EditPosition.InsertText(FRegisterArray[FSelectedRegister].Text);
     EditPosition.Restore;
@@ -739,7 +731,8 @@ begin
   end
   else
   begin
-    EditPosition.MoveRelative(0, 1);
+    if Direction = pdForward then
+      EditPosition.MoveRelative(0, 1);
     EditPosition.InsertText(FRegisterArray[FSelectedRegister].Text);
   end;
 end;
