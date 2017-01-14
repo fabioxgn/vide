@@ -425,7 +425,7 @@ begin
         'X':
           begin
             FInDelete := True;
-            if DeteSelection then
+            if DeleteSelection then
               Self.EditChar(Word('d'), ScanCode, Shift, Msg, Handled)
             else
             begin
@@ -576,6 +576,7 @@ begin
   begin
     StartedBlock := True;
     EditPosition.MoveBOL;
+    EditBlock.Reset;
     EditBlock.BeginBlock;
     EditBlock.Extend(EditPosition.Row, EditPosition.Column + 1);
   end
@@ -594,11 +595,11 @@ begin
       EditBlock.Indent(-Buffer.EditOptions.BlockIndent);
   end;
 
-  EditPosition.Restore;
-
   // If we don't call EndBlock, the selection gets buggy.
   if StartedBlock then
     EditBlock.EndBlock;
+
+  EditPosition.Restore;
   EditBlock.Restore;
 end;
 
