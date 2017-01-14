@@ -73,11 +73,11 @@ cw | change (replace) to the end of the word | implemented |
 c$ | change (replace) to the end of the lin e| implemented |
 s | delete character and substitute text | implemented |
 S | delete line and substitute text (same as cc) | implemented |
-xp | transpose two letters (delete and paste) | planned |
+xp | transpose two letters (delete and paste) | implemented |
 u | undo| implemented |
 Ctrl + r | redo | conflicting |
-> | Indent | planned |
-< | Unindent | planned |
+> | Indent | implemented |
+< | Unindent | implemented |
 ~ | Switch case | planned |
 gu | Changed case to lowercase | planned |
 gU | Change case to uppercase | planned |
@@ -98,8 +98,8 @@ gU | Change case to uppercase | planned |
 | Dw | delete (cut) the characters of the word from the cursor position to the start of the next word| implemented |
 | D | delete (cut) to the end of the line| implemented |
 | D$ | delete (cut) to the end of the line| implemented |
-| x | delete (cut) character left of the cursor| buggy (doesn't copy) |
-| X | delete (cut) character left of the cursor| buggy (doesn't copy) |
+| x | delete (cut) character left of the cursor| implemented |
+| X | delete (cut) character left of the cursor| implemented |
 
 ### Marking text (visual mode)
 

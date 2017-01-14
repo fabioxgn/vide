@@ -39,11 +39,12 @@ type
     FInsertText: String;
     FMarkArray: array[0..255] of TOTAEditPos;
     FRegisterArray: array[0..255] of TViRegister;
+    procedure ChangeIndentation(const EditPosition: IOTAEditPosition; const Buffer: IOTAEditBuffer; Direction: TDirection);
     function GetCount: Integer;
     function GetEditCount: Integer;
     procedure ResetCount;
     procedure UpdateCount(key: Char);
-    function GetPositionForMove(key: Char; count: Integer): TOTAEditPos;
+    function GetPositionForMove(key: Char; count: Integer = 0): TOTAEditPos;
     function IsMovementKey(key: Char): Boolean;
     procedure Paste(const EditPosition: IOTAEditPosition; const Buffer: IOTAEditBuffer; Direction: TDirection);
     procedure SetInsertMode(const Value: Boolean);
@@ -476,6 +477,16 @@ begin
             EditPosition.MoveBOL;
             EditPosition.MoveCursor(mmSkipWhite);
           end;
+        '>':
+          begin
+            SavePreviousAction;
+            ChangeIndentation(EditPosition, Buffer, dForward);
+          end;
+        '<':
+          begin
+            SavePreviousAction;
+            ChangeIndentation(EditPosition, Buffer, dBack);
+          end;
       end;
       ResetCount;
     end;
@@ -541,6 +552,33 @@ end;
 
 type TViCharClass = (viWhiteSpace, viWord, viSpecial);
 
+procedure TViBindings.ChangeIndentation(const EditPosition: IOTAEditPosition; const Buffer: IOTAEditBuffer; Direction:
+    TDirection);
+var
+  EditBlock: IOTAEditBlock;
+begin
+  EditBlock := GetTopMostEditView.Block;
+  EditBlock.Save;
+  EditPosition.Save;
+
+  if EditBlock.Size = 0 then
+  begin
+    EditPosition.MoveBOL;
+    EditBlock.BeginBlock;
+    EditBlock.Extend(EditPosition.Row, EditPosition.Column + 1);
+  end;
+
+  case Direction of
+    dForward:
+      EditBlock.Indent(Buffer.EditOptions.BlockIndent);
+    dBack:
+      EditBlock.Indent(-Buffer.EditOptions.BlockIndent);
+  end;
+
+  EditPosition.Restore;
+  EditBlock.Restore;
+end;
+
 // Given a movement key and a count return the position in the buffer where that movement would take you.
 // TOTAEditPos
 function TViBindings.GetCount: Integer;
@@ -556,7 +594,7 @@ begin
   Result := IfThen(FEditCount > 0, FEditCount, 1);
 end;
 
-function TViBindings.GetPositionForMove(key: Char; count: Integer) : TOTAEditPos;
+function TViBindings.GetPositionForMove(key: Char; count: Integer = 0): TOTAEditPos;
 var
   Pos: TOTAEditPos;
   EditPosition: IOTAEditPosition;
@@ -729,17 +767,17 @@ procedure TViBindings.Paste(const EditPosition: IOTAEditPosition; const Buffer: 
 var
   AutoIdent: Boolean;
 begin
-  AutoIdent := Buffer.EditOptions.BufferOptions.AutoIndent;
+  AutoIdent := Buffer.BufferOptions.AutoIndent;
   if (FRegisterArray[FSelectedRegister].IsLine) then
   begin
-    Buffer.EditOptions.BufferOptions.AutoIndent := False;
+    Buffer.BufferOptions.AutoIndent := False;
     EditPosition.MoveBOL;
     if Direction = dForward then
       EditPosition.MoveRelative(1, 0);
     EditPosition.Save;
     EditPosition.InsertText(FRegisterArray[FSelectedRegister].Text);
     EditPosition.Restore;
-    Buffer.EditOptions.BufferOptions.AutoIndent := AutoIdent;
+    Buffer.BufferOptions.AutoIndent := AutoIdent;
   end
   else
   begin
