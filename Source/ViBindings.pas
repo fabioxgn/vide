@@ -9,6 +9,7 @@ uses
 
 type
   TDirection = (dForward, dBack);
+  TBlockAction = (baDelete, baYank);
   TViRegister = record
     IsLine: Boolean;
     Text: String;
@@ -39,6 +40,7 @@ type
     FInsertText: String;
     FMarkArray: array[0..255] of TOTAEditPos;
     FRegisterArray: array[0..255] of TViRegister;
+    FInYank: Boolean;
     procedure ChangeIndentation(const EditPosition: IOTAEditPosition; const Buffer: IOTAEditBuffer; Direction: TDirection);
     function DeleteSelection: Boolean;
     function GetCount: Integer;
@@ -49,6 +51,7 @@ type
     function IsMovementKey(key: Char): Boolean;
     procedure Paste(const EditPosition: IOTAEditPosition; const Buffer: IOTAEditBuffer; Direction: TDirection);
     procedure SetInsertMode(const Value: Boolean);
+    function YankSelection: Boolean;
   public
     constructor Create;
     procedure EditKeyDown(Key, ScanCode: Word; Shift: TShiftState; Msg: TMsg; var Handled: Boolean);
@@ -131,7 +134,7 @@ var
   count: Integer;
   i: Integer;
 
-  procedure DeleteBlock(IsLine: Boolean);
+  procedure ApplyActionToBlock(Action: TBlockAction; IsLine: Boolean);
   begin
     count := GetCount * GetEditCount;
     ResetCount;
@@ -144,7 +147,14 @@ var
     EditBlock.Extend(Pos.Line, Pos.Col);
     FRegisterArray[FSelectedRegister].IsLine := IsLine;
     FRegisterArray[FSelectedRegister].Text := EditBlock.Text;
-    EditBlock.Delete;
+
+    case Action of
+      baDelete:
+        EditBlock.Delete;
+      baYank:
+        EditBlock.Reset;
+    end;
+
     EditBlock.EndBlock;
   end;
 
@@ -195,14 +205,14 @@ begin
         if not FInRepeatChange then
           SavePreviousAction;
 
-        DeleteBlock(False);
+        ApplyActionToBlock(baDelete, False);
         FInDelete := False;
       end
       else if FInChange then
       begin
         if FInRepeatChange then
         begin
-          DeleteBlock(False);
+          ApplyActionToBlock(baDelete, False);
           EditPosition.InsertText(FPreviousAction.FInsertText)
         end
         else
@@ -210,10 +220,17 @@ begin
           if (c = 'w') then c := 'e';
           if (c = 'W') then c := 'E';
           SavePreviousAction;
-          DeleteBlock(False);
+          ApplyActionToBlock(baDelete, False);
           InsertMode := True;
         end;
         FInChange := False;
+      end
+      else if FInYank then
+      begin
+        EditPosition.Save;
+        ApplyActionToBlock(baYank, False);
+        EditPosition.Restore;
+        FInYank := False;
       end
       else
       begin
@@ -233,8 +250,17 @@ begin
 
       EditPosition.MoveBOL;
       c := 'j';
-      DeleteBlock(True);
+      ApplyActionToBlock(baDelete, True);
       FInDelete := False;
+    end
+    else if FInYank and (c = 'y') then
+    begin
+      EditPosition.Save;
+      EditPosition.MoveBOL;
+      c := 'j';
+      ApplyActionToBlock(baYank, True);
+      EditPosition.Restore;
+      FInYank := False;
     end
     else
     begin
@@ -432,6 +458,18 @@ begin
               FEditCount := count - 1;
               Self.EditChar(Word('h'), ScanCode, Shift, Msg, Handled);
             end
+          end;
+        'y':
+          begin
+            FInYank := not YankSelection;
+            if FInYank then
+              FEditCount := count;
+          end;
+        'Y':
+          begin
+            FInYank := True;
+            FEditCount := count;
+            Self.EditChar(Word('y'), ScanCode, Shift, Msg, Handled);
           end;
         '.':
           begin
@@ -670,7 +708,7 @@ begin
       begin
         EditPosition.MoveEOL;
         // When moving around, must stop at last char, not on line break.
-        if (not FInDelete) and (not FInChange) then
+        if (not FInDelete) and (not FInChange) and (not FInYank) then
           EditPosition.MoveRelative(0, -1);
       end;
     'b':
@@ -855,6 +893,20 @@ procedure TViBindings.SetInsertMode(const Value: Boolean);
 begin
   FInsertMode := Value;
   ConfigureCursor;
+end;
+
+function TViBindings.YankSelection: Boolean;
+var
+  EditBlock: IOTAEditBlock;
+begin
+  EditBlock := GetTopMostEditView.Block;
+  if EditBlock.Size = 0 then
+    Exit(False);
+
+  FRegisterArray[FSelectedRegister].IsLine := False;
+  FRegisterArray[FSelectedRegister].Text := EditBlock.Text;
+  EditBlock.Reset;
+  Result := True;
 end;
 
 end.
