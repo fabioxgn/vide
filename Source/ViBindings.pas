@@ -669,6 +669,9 @@ begin
     '$':
       begin
         EditPosition.MoveEOL;
+        // When moving around, must stop at last char, not on line break.
+        if (not FInDelete) and (not FInChange) then
+          EditPosition.MoveRelative(0, -1);
       end;
     'b':
       begin
