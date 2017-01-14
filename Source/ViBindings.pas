@@ -720,7 +720,7 @@ begin
       HandleChar('$');
     end;
   'u':
-    GetEditBuffer.Undo;
+    FBuffer.Undo;
   'x':
     begin
       if not DeleteSelection then
