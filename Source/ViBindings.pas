@@ -40,6 +40,7 @@ type
     FMarkArray: array[0..255] of TOTAEditPos;
     FRegisterArray: array[0..255] of TViRegister;
     procedure ChangeIndentation(const EditPosition: IOTAEditPosition; const Buffer: IOTAEditBuffer; Direction: TDirection);
+    function DeleteSelection: Boolean;
     function GetCount: Integer;
     function GetEditCount: Integer;
     procedure ResetCount;
@@ -117,15 +118,6 @@ constructor TViBindings.Create;
 begin
   Active := True;
   InsertMode := False;
-  FParsingNumber := False;
-  FInDelete := False;
-  FInChange := False;
-  FInMark := False;
-  FInGotoMark := False;
-  FInRepeatChange := False;
-  FCount := 0;
-  FEditCount := 0;
-  FSelectedRegister := 0;
 end;
 
 procedure TViBindings.EditChar(Key, ScanCode: Word; Shift: TShiftState; Msg: TMsg; var Handled: Boolean);
@@ -267,8 +259,13 @@ begin
             end
             else
             begin
-              FInChange := True;
-              FEditCount := count;
+              if DeleteSelection then
+                SwitchToInsertModeOrDoPreviousAction
+              else
+              begin
+                FInChange := True;
+                FEditCount := count;
+              end
             end;
           end;
         'C':
@@ -279,8 +276,11 @@ begin
           end;
         'd':
           begin
-            FInDelete := True;
-            FEditCount := count;
+            if not DeleteSelection then
+            begin
+              FInDelete := True;
+              FEditCount := count;
+            end;
           end;
         'D':
           begin
@@ -399,7 +399,8 @@ begin
           end;
         's':
           begin
-            EditPosition.Delete(1);
+            if not DeleteSelection then
+              EditPosition.Delete(1);
             SwitchToInsertModeOrDoPreviousAction;
           end;
         'S':
@@ -414,15 +415,23 @@ begin
           end;
         'x':
           begin
-            FInDelete := True;
-            FEditCount := count - 1;
-            Self.EditChar(Word('l'), ScanCode, Shift, Msg, Handled);
+            if not DeleteSelection then
+            begin
+              FInDelete := True;
+              FEditCount := count - 1;
+              Self.EditChar(Word('l'), ScanCode, Shift, Msg, Handled);
+            end;
           end;
         'X':
           begin
             FInDelete := True;
-            FEditCount := count - 1;
-            Self.EditChar(Word('h'), ScanCode, Shift, Msg, Handled);
+            if DeteSelection then
+              Self.EditChar(Word('d'), ScanCode, Shift, Msg, Handled)
+            else
+            begin
+              FEditCount := count - 1;
+              Self.EditChar(Word('h'), ScanCode, Shift, Msg, Handled);
+            end
           end;
         '.':
           begin
@@ -591,6 +600,20 @@ begin
   if StartedBlock then
     EditBlock.EndBlock;
   EditBlock.Restore;
+end;
+
+function TViBindings.DeleteSelection: Boolean;
+var
+  EditBlock: IOTAEditBlock;
+begin
+  EditBlock := GetTopMostEditView.Block;
+  if EditBlock.Size = 0 then
+    Exit(False);
+
+  FRegisterArray[FSelectedRegister].IsLine := False;
+  FRegisterArray[FSelectedRegister].Text := EditBlock.Text;
+  EditBlock.Delete;
+  Result := True;
 end;
 
 // Given a movement key and a count return the position in the buffer where that movement would take you.
@@ -779,15 +802,37 @@ end;
 
 procedure TViBindings.Paste(const EditPosition: IOTAEditPosition; const Buffer: IOTAEditBuffer; Direction: TDirection);
 var
-  AutoIdent: Boolean;
+  AutoIdent, PastingInSelection: Boolean;
+  EditBlock: IOTAEditBlock;
+  Row, Col: Integer;
+
+  function FixCursorPosition: Boolean;
+  begin
+    Result := (not PastingInSelection) and (Direction = dForward);
+  end;
+
 begin
+  PastingInSelection := False;
   AutoIdent := Buffer.BufferOptions.AutoIndent;
+
+  EditBlock := GetTopMostEditView.Block;
+  if EditBlock.Size > 0 then
+  begin
+    PastingInSelection := True;
+    Row := EditBlock.StartingRow;
+    Col := EditBlock.StartingColumn;
+    EditBlock.Delete;
+    EditPosition.Move(Row, Col);
+  end;
+
   if (FRegisterArray[FSelectedRegister].IsLine) then
   begin
     Buffer.BufferOptions.AutoIndent := False;
     EditPosition.MoveBOL;
-    if Direction = dForward then
+
+    if FixCursorPosition then
       EditPosition.MoveRelative(1, 0);
+
     EditPosition.Save;
     EditPosition.InsertText(FRegisterArray[FSelectedRegister].Text);
     EditPosition.Restore;
@@ -795,8 +840,9 @@ begin
   end
   else
   begin
-    if Direction = dForward then
+    if FixCursorPosition then
       EditPosition.MoveRelative(0, 1);
+
     EditPosition.InsertText(FRegisterArray[FSelectedRegister].Text);
   end;
 end;

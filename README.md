@@ -87,17 +87,18 @@ gU | Change case to uppercase | planned |
 
 | Command | Description | Status |
 |----|----|----|
-| Yy | yank (copy) a line| planned |
+| yy | yank (copy) a line| planned |
+| Y | yank (copy) a line| planned |
 | 2yy | yank (copy) 2 lines| planned |
-| Yw | yank (copy) the characters of the word from the cursor position to the start of the next word| planned |
+| yw | yank (copy) the characters of the word from the cursor position to the start of the next word| planned |
 | Y$ | yank (copy) to end of line| planned |
 | P | put (paste) the clipboard after cursor| implemented |
 | P | put (paste) before cursor| implemented |
-| Dd | delete (cut) a line| implemented |
+| dd | delete (cut) a line| implemented |
 | 2dd | delete (cut) 2 lines| implemented |
 | Dw | delete (cut) the characters of the word from the cursor position to the start of the next word| implemented |
 | D | delete (cut) to the end of the line| implemented |
-| D$ | delete (cut) to the end of the line| implemented |
+| d$ | delete (cut) to the end of the line| implemented |
 | x | delete (cut) character left of the cursor| implemented |
 | X | delete (cut) character left of the cursor| implemented |
 
