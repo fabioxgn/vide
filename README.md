@@ -76,8 +76,8 @@ S | delete line and substitute text (same as cc) | implemented |
 xp | transpose two letters (delete and paste) | implemented |
 u | undo| implemented |
 Ctrl + r | redo | conflicting |
-> | Indent | implemented |
-< | Unindent | implemented |
+\> | Indent | implemented |
+\< | Unindent | implemented |
 ~ | Switch case | planned |
 gu | Changed case to lowercase | planned |
 gU | Change case to uppercase | planned |
